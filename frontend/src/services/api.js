@@ -1,5 +1,5 @@
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 async function request(endpoint, options = {}) {
   const response = await fetch(`${API_URL}${endpoint}`, {
@@ -9,6 +9,16 @@ async function request(endpoint, options = {}) {
     },
     ...options
   });
+
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!contentType.includes("application/json")) {
+    const responseText = await response.text();
+
+    throw new Error(
+      `API returned non-JSON response (${response.status}). Check the API URL and Netlify Functions configuration.`
+    );
+  }
 
   const data = await response.json();
 
